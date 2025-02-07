@@ -1,6 +1,8 @@
 import eurostat as eu
 import os
 import pandas as pd 
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller
 
 def pull_data(code, name, folder = 'data', country = 'NL'):
     """
@@ -73,7 +75,7 @@ def clean_dataframe(name, row_to_keep, file_name):
         name.columns = pd.to_datetime(name.columns, format = '%Y-%m')
 
         #Define the cutoff dates
-        cutoff_date_begin = pd.Timestamp('1996-02')
+        cutoff_date_begin = pd.Timestamp('2000-01')
         cutoff_date_end = pd.Timestamp('2024-11')
 
         # Use boolean indexing to filter out columns before the cutoff date
@@ -83,7 +85,18 @@ def clean_dataframe(name, row_to_keep, file_name):
         # Save the dataset to the CSV file
         file_path = os.path.join('data', f'{file_name}.csv')
         name.to_csv(file_path, index=False)
-    
+
+
+def adf_test(series, signif=0.05, name=''):
+    """Perform ADF test and print results"""
+    r = adfuller(series, autolag='AIC')
+    output = {'Test Statistic': r[0], 'p-value': r[1], '#Lags Used': r[2], 'Number of Observations Used': r[3]}
+    for key, val in r[4].items():
+        output[f'Critical Value ({key})'] = val
+    print(f'ADF Test on "{name}"\n' + '-'*47)
+    for key, val in output.items():
+        print(f'{key} : {val}')
+    print(f'Result: {"Series is Stationary" if r[1] <= signif else "Series is Non-Stationary"}')
 
 
 
