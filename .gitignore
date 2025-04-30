@@ -1,3 +1,5 @@
 chomage_env/
 __pycache__/
 *.ipynb_checkpoints/
+.venv
+*_env/
